@@ -1,15 +1,14 @@
 package filestore
 
 import (
-	"encoding/base32"
 	"errors"
-	"math/rand/v2"
+	"github.com/google/uuid"
 	"os"
 
 	"github.com/criyle/go-judge/envexec"
 )
 
-var errUniqueIDNotGenerated = errors.New("unique id does not exists after tried 50 times")
+var errUniqueIDNotGenerated = errors.New("failed to generate unique id")
 
 // FileStore defines interface to store file
 type FileStore interface {
@@ -21,13 +20,9 @@ type FileStore interface {
 }
 
 func generateID() (string, error) {
-	const randIDLength = 5
-	b := make([]byte, randIDLength)
-	r := rand.Int64N(1 << 40)
-	b[0] = byte(r)
-	b[1] = byte(r >> 8)
-	b[2] = byte(r >> 16)
-	b[3] = byte(r >> 24)
-	b[4] = byte(r >> 32)
-	return base32.StdEncoding.EncodeToString(b), nil
+	u, err := uuid.NewUUID()
+	if err != nil {
+		return "", errUniqueIDNotGenerated
+	}
+	return u.String(), nil
 }

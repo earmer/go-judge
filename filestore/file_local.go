@@ -61,7 +61,10 @@ func (s *fileLocalStore) Remove(id string) bool {
 	if _, err := os.Stat(p); os.IsNotExist(err) {
 		return false
 	}
-	os.Remove(p)
+	err := os.Remove(p)
+	if err != nil {
+		return false
+	}
 	return true
 }
 
@@ -82,18 +85,18 @@ func (s *fileLocalStore) List() map[string]string {
 }
 
 func (s *fileLocalStore) New() (*os.File, error) {
-	for range [50]struct{}{} {
-		id, err := generateID()
-		if err != nil {
-			return nil, err
-		}
-		f, err := os.OpenFile(path.Join(s.dir, id), os.O_CREATE|os.O_RDWR|os.O_EXCL, 0644)
-		if err == nil {
-			return f, nil
-		}
-		if !errors.Is(err, os.ErrExist) {
-			return nil, err
-		}
+	//for range [50]struct{}{} {
+	id, err := generateID()
+	if err != nil {
+		return nil, err
 	}
+	f, err := os.OpenFile(path.Join(s.dir, id), os.O_CREATE|os.O_RDWR|os.O_EXCL, 0644)
+	if err == nil {
+		return f, nil
+	}
+	if !errors.Is(err, os.ErrExist) {
+		return nil, err
+	}
+	//}
 	return nil, errUniqueIDNotGenerated
 }
